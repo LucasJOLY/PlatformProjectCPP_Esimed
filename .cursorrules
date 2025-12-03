@@ -1,0 +1,34 @@
+# Project Rules & Guidelines
+
+## Tech Stack
+- **Language:** C++23 (Strict)
+- **Library:** SFML 3.0.2
+- **Build System:** CMake
+
+## Coding Standards
+- **Smart Pointers:** Use `std::unique_ptr` and `std::shared_ptr`. AVOID raw `new` and `delete`.
+- **Modern Features:** Use `std::expected`, `std::optional`, `std::filesystem`, and Ranges where appropriate.
+- **Const Correctness:** Use `const` for variables and methods that do not modify state. `constexpr` for constants known at compile time.
+- **Nodistcard:** Use `[[nodiscard]]` for getters and functions where the return value should not be ignored.
+
+## Naming Conventions
+- **Classes/Structs:** `PascalCase` (e.g., `ResourceManager`, `PlayerEntity`)
+- **Variables/Functions:** `snake_case` (e.g., `load_texture`, `player_velocity`)
+- **Member Variables:** Prefix with `m_` (e.g., `m_textures`, `m_window`)
+- **Constants:** `UPPER_SNAKE_CASE` (e.g., `MAX_ENEMIES`)
+- **Files:** `PascalCase` matching the class name (e.g., `ResourceManager.hpp`, `ResourceManager.cpp`)
+
+## Documentation
+- Document all complex functions and classes.
+- Explain *why* something is done, not just *what*.
+
+## Directory Structure
+- `src/core`: Core systems (Window, Resources, Input).
+- `src/states`: Game states (Menu, Game, Editor).
+- `src/entities`: Game objects (Player, Enemies).
+- `src/ui`: UI components (Buttons, Panels).
+
+## UI & Assets
+- **Asset-Ready:** Always assume assets might be missing. Provide fallbacks (hot-pink placeholders).
+- **Visuals:** Match the "Terraquest" pixel art style.
+- **Testing:** Visually test UI responsiveness (hover, click states).

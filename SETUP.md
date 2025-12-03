@@ -75,7 +75,7 @@ Une fois tous les prérequis installés :
 
 ## Utilisation
 
-- **Fichiers dans `src/`** : Exécutent le programme principal (`mon_projet`)
+- **Fichiers dans `src/`** : Exécutent le programme principal (`PlatformProjectCPP_Esimed`)
 - **Fichiers dans `tests/`** : Compilent et exécutent les tests unitaires
 
 Le script `.vscode/run_cpp.sh` détecte automatiquement le type de fichier et exécute la bonne commande CMake.

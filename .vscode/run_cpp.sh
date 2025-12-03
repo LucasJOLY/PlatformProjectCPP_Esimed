@@ -62,7 +62,7 @@ if [ ! -f "build/CMakeCache.txt" ] || [ ! -f "build/build.ninja" ]; then
         rm -rf build
     fi
     mkdir -p build
-    cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=BOOL=TRUE -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++ -G Ninja -S . -B build > /dev/null 2>&1
+    cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=BOOL=TRUE -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -G Ninja -S . -B build > /dev/null 2>&1
     if [ $? -ne 0 ] || [ ! -f "build/build.ninja" ]; then
         echo "❌ Erreur lors de la configuration CMake"
         exit 1
@@ -78,7 +78,7 @@ if [[ "$FILE_DIR" == *"tests"* ]] || [[ "$FILE_PATH" == *"tests"* ]]; then
         echo ""
         echo "✅ Exécution des tests..."
         echo ""
-        ./build/tests
+        ./build/bin/tests
     else
         echo "❌ Erreur lors de la compilation"
         exit 1
@@ -87,12 +87,12 @@ if [[ "$FILE_DIR" == *"tests"* ]] || [[ "$FILE_PATH" == *"tests"* ]]; then
 else
     echo "🔍 Détection: programme principal détecté"
     echo "📦 Compilation avec CMake..."
-    cmake --build build --target mon_projet
+    cmake --build build --target PlatformProjectCPP_Esimed
     if [ $? -eq 0 ]; then
         echo ""
         echo "✅ Exécution du programme..."
         echo ""
-        ./build/mon_projet
+        ./build/bin/PlatformProjectCPP_Esimed
     else
         echo "❌ Erreur lors de la compilation"
         exit 1
