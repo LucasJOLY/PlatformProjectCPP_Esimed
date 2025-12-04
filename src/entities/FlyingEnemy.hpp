@@ -2,6 +2,7 @@
 
 #include "Entity.hpp"
 #include "../core/ResourceManager.hpp"
+#include <optional>
 
 namespace entities {
 
@@ -13,8 +14,6 @@ namespace entities {
         void update(float dt) override;
         void render(core::GameWindow& window) override;
 
-#include <optional>
-
     private:
         std::optional<sf::Sprite> m_sprite;
         float m_start_y;
@@ -22,9 +21,9 @@ namespace entities {
         int m_frame;
         float m_animation_timer;
 
-        static constexpr float AMPLITUDE = 50.0f; // Vertical range
+        static constexpr float AMPLITUDE = 64.0f; // Vertical range (2 tiles up/down)
         static constexpr float SPEED = 2.0f;      // Oscillation speed
-        static constexpr float ANIMATION_SPEED = 0.1f;
+        static constexpr float ANIMATION_SPEED = 0.15f; // Animation speed for wing flapping
     };
 
 } // namespace entities

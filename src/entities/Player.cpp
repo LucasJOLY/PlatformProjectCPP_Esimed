@@ -14,6 +14,7 @@ namespace entities {
           m_on_ground(false),
           m_lives(3),
           m_state(AnimationState::Idle),
+          m_prev_state(AnimationState::Idle),
           m_animation_timer(0.0f),
           m_facing_right(true),
           m_walk_frame(0) {
@@ -77,12 +78,21 @@ namespace entities {
         auto& rm = core::ResourceManager::instance();
         
         // Determine state
+        AnimationState new_state;
         if (!m_on_ground) {
-            m_state = AnimationState::Jumping;
+            new_state = AnimationState::Jumping;
         } else if (std::abs(m_velocity.x) > 10.0f) {
-            m_state = AnimationState::Walking;
+            new_state = AnimationState::Walking;
         } else {
-            m_state = AnimationState::Idle;
+            new_state = AnimationState::Idle;
+        }
+        
+        // Reset animation timer on state change for smoother transitions
+        if (new_state != m_state) {
+            m_prev_state = m_state;
+            m_state = new_state;
+            m_animation_timer = 0.0f;
+            m_walk_frame = 0;
         }
         
         // Determine facing direction
@@ -107,7 +117,7 @@ namespace entities {
             case AnimationState::Walking:
                 m_animation_timer += dt;
                 if (m_animation_timer >= ANIMATION_FRAME_TIME) {
-                    m_animation_timer = 0.0f;
+                    m_animation_timer -= ANIMATION_FRAME_TIME; // Subtract instead of reset for consistent timing
                     m_walk_frame = 1 - m_walk_frame; // Toggle between 0 and 1
                 }
                 

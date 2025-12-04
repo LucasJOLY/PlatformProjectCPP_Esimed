@@ -2,6 +2,8 @@
 
 #include "Entity.hpp"
 #include "../core/ResourceManager.hpp"
+#include <optional>
+#include <string>
 
 namespace entities {
 
@@ -31,8 +33,6 @@ namespace entities {
             Jumping
         };
 
-#include <optional>
-
     private:
         std::optional<sf::Sprite> m_sprite;
         bool m_on_ground;
@@ -40,6 +40,7 @@ namespace entities {
         
         // Animation members
         AnimationState m_state;
+        AnimationState m_prev_state; // Track previous state for smoother transitions
         float m_animation_timer;
         bool m_facing_right;
         int m_walk_frame; // 0 or 1 for walk_a / walk_b
@@ -55,7 +56,7 @@ namespace entities {
         static constexpr float JUMP_VELOCITY = -500.0f;
         static constexpr float GRAVITY = 1200.0f;
         static constexpr float MAX_FALL_SPEED = 600.0f;
-        static constexpr float ANIMATION_FRAME_TIME = 0.15f; // Time per frame
+        static constexpr float ANIMATION_FRAME_TIME = 0.2f; // Smoother animation
     };
 
 } // namespace entities

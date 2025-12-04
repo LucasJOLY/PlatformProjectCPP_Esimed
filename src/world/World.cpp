@@ -103,7 +103,7 @@ namespace world {
     }
 
     void World::render(core::GameWindow& window) {
-        m_tilemap.render(window);
+        m_tilemap.render(window, m_camera);
         
         // Render coins
         for (const auto& coin : m_coins) {
@@ -113,6 +113,11 @@ namespace world {
         // Render enemies
         for (const auto& enemy : m_enemies) {
             enemy->render(window);
+        }
+        
+        // Render flying enemies
+        for (const auto& fly : m_flying_enemies) {
+            fly->render(window);
         }
         
         if (m_player) {
@@ -251,6 +256,7 @@ namespace world {
                 // Update checkpoint position if it's different
                 if (m_checkpoint_position != checkpoint_pos) {
                     m_checkpoint_position = checkpoint_pos;
+                    m_tilemap.activate_checkpoint(checkpoint_pos);
                     std::cout << "Checkpoint activated!" << std::endl;
                 }
             }
@@ -277,65 +283,69 @@ namespace world {
 
     std::string World::get_level_data(int level_id) {
         switch (level_id) {
-            case 1: // Tutorial: Basic platforming
+            case 1: // Tutorial: Basic platforming (no enemies)
                 return 
-                    "                                        \n"
-                    "                                        \n"
-                    "                                        \n"
-                    "                                        \n"
-                    "                O                       \n"
-                    "  P      O         O                  F \n"
-                    "####                              ######\n"
-                    "####      ###   O   ###   O   ##########\n"
-                    "####################################    \n"
+                    "#                                      #\n"
+                    "#                                      #\n"
+                    "#                                      #\n"
+                    "#                                      #\n"
+                    "#               O                      #\n"
+                    "#  P      O         O                F #\n"
+                    "##                              ########\n"
+                    "##      ###   O   ###   O   ############\n"
+                    "########################################\n"
                     "########################################\n";
                     
             case 2: // Introduction to enemies
                 return 
-                    "                                        \n"
-                    "                                        \n"
-                    "                O                       \n"
-                    "                                        \n"
-                    "  P      O                 O          F \n"
-                    "####                              ######\n"
-                    "####      ###   E   ###   O   ##########\n"
-                    "####################################    \n"
+                    "#                                      #\n"
+                    "#                                      #\n"
+                    "#               O                      #\n"
+                    "#                                      #\n"
+                    "#  P      O              O           F #\n"
+                    "##           #E#              ##########\n"
+                    "##      ###          ###   O   #########\n"
+                    "########################################\n"
                     "########################################\n";
                     
-            case 3: // Platforming challenge
+            case 3: // Platforming challenge with flying enemies
                 return 
-                    "                                        \n"
-                    "                O                       \n"
-                    "                                      F \n"
-                    "                                  ######\n"
-                    "  P      O         O         O          \n"
-                    "####                                    \n"
-                    "####      ##  O   ##  O   ##            \n"
-                    "####                          ##########\n"
-                    "########################################\n";
+                    "#                                                                                                  #\n"
+                    "#                                                                                                  #\n"
+                    "#                                                                                                  #\n"
+                    "#                                                                                                  #\n"
+                    "#                    O             O                          O                                    #\n"
+                    "#  P      O      V          V               V         C               V                          F #\n"
+                    "##           ######    ######       ######      ########      ######       ######       ###########\n"
+                    "##                                                                                        #########\n"
+                    "##    O   ###       ##       ##        ###      ##       ###       ##       ###      ###############\n"
+                    "####################################################################################################\n"
+                    "####################################################################################################\n";
                     
-            case 4: // More enemies
+            case 4: // Enemies and flying enemies combined
                 return 
-                    "                                        \n"
-                    "                O         O             \n"
-                    "                                      F \n"
-                    "  P      O                        ######\n"
-                    "####                                    \n"
-                    "####  E   ##  E   ##  E   ##  O         \n"
-                    "####################################    \n"
-                    "########################################\n";
+                    "#                                                                                                  #\n"
+                    "#                                                                                                  #\n"
+                    "#                                                                                                  #\n"
+                    "#                O             O                          O                        O               #\n"
+                    "#  P      O                                                                                      F #\n"
+                    "##         #E#        #E#             V        C        V           #E#            V    ###########\n"
+                    "##         ###        ###        ######      #####     ######       ###        ####################\n"
+                    "####################################################################################################\n"
+                    "####################################################################################################\n";
                     
-            case 5: // Final challenge
+            case 5: // Final challenge with many enemies
                 return 
-                    "                O         O             \n"
-                    "                                      F \n"
-                    "                                  ######\n"
-                    "  P      O                 O            \n"
-                    "####                                    \n"
-                    "####  O   ##  E   ##  O   ##            \n"
-                    "####                          ##########\n"
-                    "####  E                   E             \n"
-                    "########################################\n";
+                    "#                                                                                                                      #\n"
+                    "#                                                                                                                      #\n"
+                    "#                                                                                                                      #\n"
+                    "#                         O             O                          O                          O                        #\n"
+                    "#  P      O                                                                                                          F #\n"
+                    "##                             V    #E#     C       V        #E#       V         #E#       V         ############\n"
+                    "##         ##        ###       ##        ###   #####   ######     ###      ######     ###      ######     ############\n"
+                    "##     #####    E    ###    E    ####     #####        ###        ####     #####     #####     ###  #########################\n"
+                    "###########################################################################################################################\n"
+                    "###########################################################################################################################\n";
                     
             default:
                 return get_level_data(1);
