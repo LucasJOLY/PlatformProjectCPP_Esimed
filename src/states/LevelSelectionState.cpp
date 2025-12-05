@@ -3,13 +3,14 @@
 #include "../core/ResourceManager.hpp"
 #include "../core/GameWindow.hpp"
 #include "../core/LevelProgress.hpp"
+#include "../core/CustomLevelManager.hpp"
 #include <iostream>
 
 namespace states {
 
     LevelSelectionState::LevelSelectionState(StateManager& state_manager)
         : m_state_manager(state_manager),
-          m_background(core::ResourceManager::instance().get_texture("menu_bg")), // Reuse menu background
+          m_background(core::ResourceManager::instance().get_texture("menu_bg")),
           m_title(core::ResourceManager::instance().get_font("cosmic_font"))
     {}
 
@@ -37,24 +38,71 @@ namespace states {
         rm.load_texture("lock_icon", "assets/Pack_to_pick/Game/Sprites/Tiles/Default/lock_blue.png");
         rm.load_texture("star_full", "assets/Pack_to_pick/UI/PNG/Yellow/Default/star.png");
         rm.load_texture("star_empty", "assets/Pack_to_pick/UI/PNG/Grey/Default/star.png");
+        rm.load_texture("button_blue_rect", "assets/Pack_to_pick/UI/PNG/Blue/Default/button_rectangle_depth_flat.png");
         
         // Load Click Sound
         if (!rm.has_sound_buffer("click_sound")) rm.load_sound_buffer("click_sound", "assets/menu/click.ogg");
 
-        // Create Level Buttons
+        auto& font = rm.get_font("cosmic_font");
+
+        // Back Button
+        m_back_button = std::make_unique<ui::UIButton>(
+            sf::Vector2f{50.0f, 650.0f}, 
+            sf::Vector2f{200.f, 50.f}, 
+            "BACK", 
+            "button_cosmic", 
+            "click_sound", 
+            font
+        );
+        m_back_button->set_callback([this]() {
+            m_state_manager.pop_state();
+        });
+
+        // Toggle Button (above back button)
+        m_toggle_button = std::make_unique<ui::UIButton>(
+            sf::Vector2f{50.0f, 580.0f}, 
+            sf::Vector2f{200.f, 50.f}, 
+            "CUSTOM", 
+            "button_blue_rect", 
+            "click_sound", 
+            font
+        );
+        m_toggle_button->set_callback([this]() {
+            switch_view();
+        });
+
+        // Start with standard levels
+        m_showing_custom = false;
+        create_standard_level_buttons();
+    }
+
+    void LevelSelectionState::switch_view() {
+        m_showing_custom = !m_showing_custom;
+        m_level_buttons.clear();
+        
+        if (m_showing_custom) {
+            m_title.setString("Niveaux Custom");
+            m_toggle_button->set_label("STANDARD");
+            create_custom_level_buttons();
+        } else {
+            m_title.setString("Select Level");
+            m_toggle_button->set_label("CUSTOM");
+            create_standard_level_buttons();
+        }
+    }
+
+    void LevelSelectionState::create_standard_level_buttons() {
+        m_level_buttons.clear();
+        
         auto& font = core::ResourceManager::instance().get_font("cosmic_font");
-        float start_x = 1280.0f / 2.0f - 250.0f; // Centered grid
+        float start_x = 1280.0f / 2.0f - 250.0f;
         float start_y = 250.0f;
 
         for (int i = 1; i <= 5; ++i) {
             bool unlocked = core::LevelProgress::instance().is_unlocked(i);
-            
-            // For locked levels, we don't show the number, but we handle that in draw or here?
-            // User said "lock icon in the middle". 
-            // If I put text " " (empty), UIButton won't draw text.
             std::string label = unlocked ? std::to_string(i) : ""; 
             
-            float x = start_x + ((i - 1) % 3) * (100.0f + 50.0f); // 3 columns
+            float x = start_x + ((i - 1) % 3) * (100.0f + 50.0f);
             float y = start_y + ((i - 1) / 3) * (100.0f + 50.0f);
 
             auto btn = std::make_unique<ui::UIButton>(
@@ -73,24 +121,44 @@ namespace states {
                     m_state_manager.push_state(std::make_unique<GameState>(m_state_manager, level));
                 });
             }
-            // Locked buttons have no callback
             
-            m_buttons.push_back(std::move(btn));
+            m_level_buttons.push_back(std::move(btn));
         }
+    }
 
-        // Back Button
-        auto back_btn = std::make_unique<ui::UIButton>(
-            sf::Vector2f{50.0f, 650.0f}, 
-            sf::Vector2f{200.f, 50.f}, 
-            "BACK", 
-            "button_cosmic", 
-            "click_sound", 
-            font
-        );
-        back_btn->set_callback([this]() {
-            m_state_manager.pop_state();
-        });
-        m_buttons.push_back(std::move(back_btn));
+    void LevelSelectionState::create_custom_level_buttons() {
+        m_level_buttons.clear();
+        
+        auto& rm = core::ResourceManager::instance();
+        auto& font = rm.get_font("cosmic_font");
+        
+        const auto& levels = core::CustomLevelManager::instance().get_all_levels();
+        if (levels.empty()) return;
+        
+        float start_x = 1280.0f / 2.0f - 200.0f;
+        float start_y = 220.0f;
+        float gap_y = 60.0f;
+        
+        for (size_t i = 0; i < levels.size(); ++i) {
+            const auto& level = levels[i];
+            float y = start_y + i * gap_y;
+            
+            auto btn = std::make_unique<ui::UIButton>(
+                sf::Vector2f{start_x, y}, 
+                sf::Vector2f{400.f, 50.f}, 
+                level.name, 
+                "button_blue_rect", 
+                "click_sound", 
+                font
+            );
+            
+            std::string level_data = level.data;
+            btn->set_callback([this, level_data]() {
+                m_state_manager.push_state(std::make_unique<GameState>(m_state_manager, level_data, false));
+            });
+            
+            m_level_buttons.push_back(std::move(btn));
+        }
     }
 
     void LevelSelectionState::handle_input() {
@@ -98,9 +166,12 @@ namespace states {
         sf::Vector2f mouse_pos(static_cast<float>(mouse_pos_i.x), static_cast<float>(mouse_pos_i.y));
         bool mouse_pressed = sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
 
-        for (auto& btn : m_buttons) {
+        for (auto& btn : m_level_buttons) {
             btn->update(mouse_pos, mouse_pressed);
         }
+        
+        if (m_back_button) m_back_button->update(mouse_pos, mouse_pressed);
+        if (m_toggle_button) m_toggle_button->update(mouse_pos, mouse_pressed);
     }
 
     void LevelSelectionState::update(float dt) {
@@ -116,54 +187,60 @@ namespace states {
         const auto& star_full_tex = rm.get_texture("star_full");
         const auto& star_empty_tex = rm.get_texture("star_empty");
 
-        // Draw buttons and overlays
-        // We iterate up to 5 for levels, the last button is "Back"
-        for (size_t i = 0; i < m_buttons.size(); ++i) {
-            m_buttons[i]->render(window);
+        // Draw level buttons
+        for (size_t i = 0; i < m_level_buttons.size(); ++i) {
+            m_level_buttons[i]->render(window);
             
-            // If it's a level button (index 0 to 4)
-            if (i < 5) {
+            // For standard levels, show lock icons and stars
+            if (!m_showing_custom && i < 5) {
                 int level_id = static_cast<int>(i) + 1;
                 bool unlocked = core::LevelProgress::instance().is_unlocked(level_id);
-                sf::Vector2f pos = m_buttons[i]->get_position();
-                sf::Vector2f size = m_buttons[i]->get_size();
+                sf::Vector2f pos = m_level_buttons[i]->get_position();
+                sf::Vector2f size = m_level_buttons[i]->get_size();
                 sf::Vector2f center = {pos.x + size.x / 2.0f, pos.y + size.y / 2.0f};
-
+                
                 if (!unlocked) {
-                    // Draw lock icon in center
+                    // Draw lock icon
                     sf::Sprite lock_sprite(lock_tex);
-                    // Scale lock to fit nicely (e.g. 40x40)
-                    sf::Vector2u lock_size = lock_tex.getSize();
-                    lock_sprite.setScale({40.0f / lock_size.x, 40.0f / lock_size.y});
-                    lock_sprite.setOrigin({lock_size.x / 2.0f, lock_size.y / 2.0f});
+                    lock_sprite.setScale({0.8f, 0.8f});
+                    sf::Vector2u l_size = lock_tex.getSize();
+                    lock_sprite.setOrigin({l_size.x / 2.0f, l_size.y / 2.0f});
                     lock_sprite.setPosition(center);
                     window.draw(lock_sprite);
                 } else {
-                    // Draw stars above
+                    // Draw stars
                     int stars = core::LevelProgress::instance().get_stars(level_id);
-                    // Draw 3 stars, filled or empty
-                    // Position: above button, slightly overlapping
-                    float star_y = pos.y - 10.0f; // Slightly above top edge? Or overlapping top edge?
-                    // User said "un peu superposé" (slightly overlapping).
-                    // Let's put them at top of button.
-                    
-                    float star_spacing = 25.0f;
-                    float star_start_x = center.x - star_spacing; // Center the 3 stars
+                    float star_y = pos.y - 20.0f;
+                    float star_spacing = 20.0f;
+                    float star_start_x = center.x - star_spacing;
                     
                     for (int s = 0; s < 3; ++s) {
-                        sf::Sprite star_sprite(s < stars ? star_full_tex : star_empty_tex);
-                        star_sprite.setScale({0.5f, 0.5f}); // Small stars
-                        // Adjust origin to center
+                        const sf::Texture& star_tex = (s < stars) ? star_full_tex : star_empty_tex;
+                        sf::Sprite star_sprite(star_tex);
+                        star_sprite.setScale({0.5f, 0.5f});
                         sf::Vector2u s_size = star_sprite.getTexture().getSize();
                         star_sprite.setOrigin({s_size.x / 2.0f, s_size.y / 2.0f});
-                        
-                        // Arc arrangement or straight line? Straight line is easier.
                         star_sprite.setPosition({star_start_x + s * star_spacing, star_y});
                         window.draw(star_sprite);
                     }
                 }
             }
         }
+        
+        // Show "no custom levels" message if in custom mode and empty
+        if (m_showing_custom && m_level_buttons.empty()) {
+            auto& font = rm.get_font("cosmic_font");
+            sf::Text empty_text(font, "Aucun niveau custom!", 28);
+            empty_text.setFillColor(sf::Color(200, 200, 200));
+            sf::FloatRect bounds = empty_text.getLocalBounds();
+            empty_text.setOrigin({bounds.position.x + bounds.size.x / 2.0f, bounds.position.y + bounds.size.y / 2.0f});
+            empty_text.setPosition({1280.0f / 2.0f, 350.0f});
+            window.draw(empty_text);
+        }
+        
+        // Draw back and toggle buttons
+        if (m_back_button) m_back_button->render(window);
+        if (m_toggle_button) m_toggle_button->render(window);
     }
 
 } // namespace states

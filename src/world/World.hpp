@@ -16,6 +16,7 @@ namespace world {
     class World {
     public:
         explicit World(int level_id);
+        explicit World(const std::string& custom_level_data);  // For custom levels
         ~World() = default;
 
         void update(float dt);

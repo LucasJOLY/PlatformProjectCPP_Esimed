@@ -22,6 +22,7 @@ namespace ui {
 
         void set_callback(std::function<void()> callback);
         void set_icon(const sf::Texture& texture);
+        void set_label(const std::string& label);
         
         sf::Vector2f get_position() const { return {m_bounds.position.x, m_bounds.position.y}; }
         sf::Vector2f get_size() const { return {m_bounds.size.x, m_bounds.size.y}; }

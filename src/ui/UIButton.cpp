@@ -80,19 +80,39 @@ namespace ui {
         sf::Vector2u tex_size = texture.getSize();
         m_icon->setScale({icon_size / tex_size.x, icon_size / tex_size.y});
         
-        // Re-center text and icon
-        if (m_text) {
+        float center_x = m_bounds.position.x + m_bounds.size.x / 2.0f;
+        float center_y = m_bounds.position.y + m_bounds.size.y / 2.0f;
+        
+        // Check if text is empty
+        bool has_text = m_text && !m_text->getString().isEmpty();
+        
+        if (has_text) {
+            // Re-center text and icon together
             sf::FloatRect text_bounds = m_text->getLocalBounds();
             float total_width = icon_size + 10.0f + text_bounds.size.x; // 10px spacing
             
             float start_x = m_bounds.position.x + (m_bounds.size.x - total_width) / 2.0f;
-            float center_y = m_bounds.position.y + m_bounds.size.y / 2.0f;
             
             m_icon->setPosition({start_x, center_y - icon_size / 2.0f});
             
             // Adjust text pos (origin was centered in constructor, reset it to left-center)
             m_text->setOrigin({text_bounds.position.x, text_bounds.position.y + text_bounds.size.y / 2.0f});
             m_text->setPosition({start_x + icon_size + 10.0f, center_y - 5.0f});
+        } else {
+            // Center icon only
+            m_icon->setPosition({center_x - icon_size / 2.0f, center_y - icon_size / 2.0f});
+        }
+    }
+
+    void UIButton::set_label(const std::string& label) {
+        if (m_text) {
+            m_text->setString(label);
+            // Re-center text
+            sf::FloatRect text_bounds = m_text->getLocalBounds();
+            m_text->setOrigin({text_bounds.position.x + text_bounds.size.x / 2.0f,
+                              text_bounds.position.y + text_bounds.size.y / 2.0f});
+            m_text->setPosition({m_bounds.position.x + m_bounds.size.x / 2.0f,
+                                m_bounds.position.y + m_bounds.size.y / 2.0f - 5.0f});
         }
     }
 

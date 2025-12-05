@@ -47,6 +47,48 @@ namespace world {
         std::cout << "Spawned " << m_total_coins << " coins" << std::endl;
     }
 
+    World::World(const std::string& custom_level_data) : m_level_id(-1), m_checkpoint_position(100.0f, 500.0f), 
+                                  m_level_complete(false), m_game_over(false), 
+                                  m_coins_collected(0), m_total_coins(0) {
+        std::cout << "World initialized for Custom Level" << std::endl;
+        
+        // Initialize camera
+        m_camera.setSize(sf::Vector2f(800.0f, 600.0f));
+        m_camera.setCenter(sf::Vector2f(400.0f, 300.0f));
+        
+        // Load custom level data
+        m_tilemap.load_from_string(custom_level_data, -1);
+        
+        // Create player at spawn position
+        m_player = std::make_unique<entities::Player>(m_tilemap.get_spawn_position());
+        m_checkpoint_position = m_tilemap.get_spawn_position();
+        
+        // Spawn enemies and coins from level data
+        std::istringstream stream(custom_level_data);
+        std::string line;
+        int row = 0;
+        while (std::getline(stream, line)) {
+            for (size_t col = 0; col < line.length(); ++col) {
+                if (line[col] == 'E') {
+                    sf::Vector2f enemy_pos(col * 32.0f, row * 32.0f);
+                    m_enemies.push_back(std::make_unique<entities::Enemy>(enemy_pos));
+                } else if (line[col] == 'V') {
+                    sf::Vector2f fly_pos(col * 32.0f, row * 32.0f);
+                    m_flying_enemies.push_back(std::make_unique<entities::FlyingEnemy>(fly_pos));
+                } else if (line[col] == 'O') {
+                    sf::Vector2f coin_pos(col * 32.0f, row * 32.0f);
+                    m_coins.push_back(std::make_unique<entities::Coin>(coin_pos));
+                    m_total_coins++;
+                }
+            }
+            row++;
+        }
+        
+        std::cout << "Spawned " << m_enemies.size() << " enemies" << std::endl;
+        std::cout << "Spawned " << m_flying_enemies.size() << " flying enemies" << std::endl;
+        std::cout << "Spawned " << m_total_coins << " coins" << std::endl;
+    }
+
     void World::update(float dt) {
         // Don't update if game is over or level complete
         if (m_game_over || m_level_complete) return;

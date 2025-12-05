@@ -2,6 +2,7 @@
 #include "StateManager.hpp"
 #include "LevelSelectionState.hpp"
 #include "SkinSelectionState.hpp"
+#include "EditorMenuState.hpp"
 #include "../core/ResourceManager.hpp"
 #include "../core/GameWindow.hpp"
 #include <iostream>
@@ -63,9 +64,17 @@ namespace states {
         m_buttons.push_back(std::move(skins_btn));
 
         auto editor_btn = std::make_unique<ui::UIButton>(sf::Vector2f{center_x, start_y + gap_y * 2}, sf::Vector2f{350.f, 100.f}, "EDITOR", "button_cosmic", "click_sound", font);
-        editor_btn->set_callback([]() { std::cout << "Editor Clicked!" << std::endl; });
+        editor_btn->set_callback([this]() { 
+            m_state_manager.push_state(std::make_unique<EditorMenuState>(m_state_manager));
+        });
         m_buttons.push_back(std::move(editor_btn));
 
+        // Quit button in top-right corner
+        auto quit_btn = std::make_unique<ui::UIButton>(sf::Vector2f{1100.f, 20.f}, sf::Vector2f{150.f, 60.f}, "QUIT", "button_cosmic", "click_sound", font);
+        quit_btn->set_callback([this]() { 
+            m_state_manager.get_window().get_sf_window().close();
+        });
+        m_buttons.push_back(std::move(quit_btn));
 
     }
 

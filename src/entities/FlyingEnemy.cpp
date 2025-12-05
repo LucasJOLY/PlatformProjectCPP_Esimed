@@ -11,8 +11,8 @@ namespace entities {
           m_animation_timer(0.0f) {
         
         auto& rm = core::ResourceManager::instance();
-        rm.load_texture("fly_a", "assets/Pack_to_pick/Game/Sprites/Enemies/Double/fly_a.png");
-        rm.load_texture("fly_b", "assets/Pack_to_pick/Game/Sprites/Enemies/Double/fly_b.png");
+        rm.load_texture("fly_a", "assets/Pack_to_pick/Game/Sprites/Enemies/Default/fly_a.png");
+        rm.load_texture("fly_b", "assets/Pack_to_pick/Game/Sprites/Enemies/Default/fly_b.png");
         
         m_sprite.emplace(rm.get_texture("fly_a"));
         
