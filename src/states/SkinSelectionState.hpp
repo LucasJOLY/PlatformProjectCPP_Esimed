@@ -28,9 +28,14 @@ namespace states {
         sf::Text m_title;
         sf::Text m_wallet_text;
         std::optional<sf::Sprite> m_wallet_coin_sprite;
+        std::optional<sf::Sprite> m_divider_top;
+        std::optional<sf::Sprite> m_divider_bottom;
         std::vector<std::unique_ptr<ui::UIButton>> m_buttons;
         std::vector<sf::Text> m_skin_labels;
         std::vector<sf::Sprite> m_skin_previews;
+        std::vector<sf::Sprite> m_skin_circles;      // Blue circle backgrounds
+        std::vector<sf::Sprite> m_selected_checks;   // Checkmarks for selected skin
+        std::vector<bool> m_is_selected;             // Track which skin is selected
     };
 
 } // namespace states

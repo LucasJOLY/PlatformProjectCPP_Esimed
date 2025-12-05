@@ -10,13 +10,13 @@ namespace states {
 
     EditorMenuState::EditorMenuState(StateManager& state_manager)
         : m_state_manager(state_manager),
-          m_background(core::ResourceManager::instance().get_texture("menu_bg")),
+          m_background(core::ResourceManager::instance().load_texture("menu_bg_clean", "assets/menu/background-menu-clean.png")),
           m_title(core::ResourceManager::instance().get_font("cosmic_font"))
     {}
 
     void EditorMenuState::init() {
         // Setup Background
-        const auto& bg_tex = core::ResourceManager::instance().get_texture("menu_bg");
+        const auto& bg_tex = core::ResourceManager::instance().get_texture("menu_bg_clean");
         sf::Vector2u bg_size = bg_tex.getSize();
         m_background.setScale({1280.0f / bg_size.x, 720.0f / bg_size.y});
 
@@ -155,8 +155,8 @@ namespace states {
     }
 
     void EditorMenuState::draw(core::GameWindow& window) {
-        // Solid blue background
-        window.clear(sf::Color(50, 120, 180));
+        // Draw background
+        window.draw(m_background);
         window.draw(m_title);
         
         for (auto& btn : m_buttons) {

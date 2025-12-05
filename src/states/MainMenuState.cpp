@@ -33,7 +33,7 @@ namespace states {
 
         // Setup Title
         m_title.setFont(font);
-        m_title.setString("Cosmic Quest");
+        m_title.setString("Plateformer");
         m_title.setCharacterSize(100); 
         m_title.setFillColor(sf::Color(100, 200, 255)); // Light Blue
         m_title.setOutlineColor(sf::Color(0, 50, 100)); // Dark Blue outline
