@@ -1,0 +1,1 @@
+    core::GameWindow window(1920, 1080, "Terraquest Platformer");
